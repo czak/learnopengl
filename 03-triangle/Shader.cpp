@@ -1,5 +1,5 @@
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 
 #include "Shader.hpp"
@@ -11,7 +11,7 @@ Shader::Shader(GLenum type, const std::string& filename) {
   auto source = buffer.str();
 
   id = glCreateShader(type);
-  const char* sources[1] = { source.c_str() };
+  const char* sources[1] = {source.c_str()};
   glShaderSource(id, 1, sources, NULL);
   glCompileShader(id);
 
@@ -32,7 +32,7 @@ Shader::~Shader() {
 
 ShaderProgram::ShaderProgram(std::initializer_list<Shader> list) {
   id = glCreateProgram();
-  for (const auto& shader: list) {
+  for (const auto& shader : list) {
     glAttachShader(id, shader.id);
   }
 

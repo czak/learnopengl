@@ -1,6 +1,6 @@
 #include <GL/glew.h>
-#include <string>
 #include <initializer_list>
+#include <string>
 
 enum class ShaderType {
   Vertex,
