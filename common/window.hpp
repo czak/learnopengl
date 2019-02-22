@@ -3,6 +3,10 @@
 #include <cstdio>
 #include <exception>
 
+struct Point {
+  float x, y;
+};
+
 class Window {
  public:
   Window(int width, int height, const char* title);
@@ -11,11 +15,9 @@ class Window {
   void swapBuffers();
   void pollEvents();
 
+  Point cursorPos;
+  int width, height;
+
  private:
   GLFWwindow* glfwWindow;
-  static void errorCallback(int error, const char* description);
-  static void framebufferSizeCallback(GLFWwindow* window, int width,
-                                      int height);
-  static void keyCallback(GLFWwindow* window, int key, int scancode, int action,
-                          int mods);
 };

@@ -5,7 +5,16 @@
 
 #include "window.hpp"
 
+static void errorCallback(int error, const char* description);
+static void keyCallback(GLFWwindow* window, int key, int scancode, int action,
+                        int mods);
+static void cursorPosCallback(GLFWwindow* window, double xpos, double ypos);
+static void framebufferSizeCallback(GLFWwindow* window, int width, int height);
+
 Window::Window(int width, int height, const char* title) {
+  this->width = width;
+  this->height = height;
+
   glfwSetErrorCallback(errorCallback);
 
   if (!glfwInit()) throw std::exception();
@@ -21,11 +30,15 @@ Window::Window(int width, int height, const char* title) {
     throw std::exception();
   }
 
+  // link glfw
+  glfwSetWindowUserPointer(glfwWindow, this);
+
   glfwMakeContextCurrent(glfwWindow);
   glfwSwapInterval(1);
 
   glfwSetFramebufferSizeCallback(glfwWindow, framebufferSizeCallback);
   glfwSetKeyCallback(glfwWindow, keyCallback);
+  glfwSetCursorPosCallback(glfwWindow, cursorPosCallback);
 
   GLenum res = glewInit();
   if (res != GLEW_OK) {
@@ -43,18 +56,25 @@ void Window::swapBuffers() { glfwSwapBuffers(glfwWindow); }
 
 void Window::pollEvents() { glfwPollEvents(); }
 
-void Window::keyCallback(GLFWwindow* window, int key,
-                         [[maybe_unused]] int scancode, int action,
-                         [[maybe_unused]] int mods) {
+static void errorCallback(int error, const char* description) {
+  fprintf(stderr, "Error %d: %s\n", error, description);
+}
+
+static void keyCallback(GLFWwindow* window, int key,
+                        [[maybe_unused]] int scancode, int action,
+                        [[maybe_unused]] int mods) {
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
 
-void Window::framebufferSizeCallback([[maybe_unused]] GLFWwindow* window,
-                                     int width, int height) {
-  glViewport(0, 0, width, height);
+static void cursorPosCallback(GLFWwindow* window, double xpos, double ypos) {
+  Window* win = (Window*)glfwGetWindowUserPointer(window);
+  win->cursorPos = {(float)xpos, (float)ypos};
 }
 
-void Window::errorCallback(int error, const char* description) {
-  fprintf(stderr, "Error %d: %s\n", error, description);
+static void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
+  Window* win = (Window*)glfwGetWindowUserPointer(window);
+  win->width = width;
+  win->height = height;
+  glViewport(0, 0, width, height);
 }

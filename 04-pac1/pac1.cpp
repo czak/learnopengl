@@ -76,7 +76,12 @@ int main() {
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
-    glUniform1i(glGetUniformLocation(shader.id, "texture"), 0);
+    glUniform1i(glGetUniformLocation(shader.id, "texture1"), 0);
+
+    // mouse pos scaled to window
+    float x = win.cursorPos.x / win.width;
+    float y = 1 - win.cursorPos.y / win.height;
+    glUniform2f(glGetUniformLocation(shader.id, "mousePos"), x, y);
 
     glUseProgram(shader.id);
     glBindVertexArray(VAO);
