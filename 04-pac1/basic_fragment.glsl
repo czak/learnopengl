@@ -13,6 +13,6 @@ void main()
   /* FragColor = vec4(TexCoord, 1.0f, 1.0f); */
   float dist = 1 - distance(TexCoord, mousePos)*3;
   vec4 texpoint = texture(texture1, TexCoord);
-  FragColor = vec4(texpoint *dist);
+  FragColor = vec4(texpoint * dist);
   /* FragColor = light; */
 }

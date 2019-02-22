@@ -4,7 +4,7 @@
 #include "../common/window.hpp"
 
 int main() {
-  Window win(448, 576, "Hello");
+  Window win(224 * 3, 288 * 3, "Hello");
   Shader shader("basic_vertex.glsl", "basic_fragment.glsl");
 
   float vertices[] = {
