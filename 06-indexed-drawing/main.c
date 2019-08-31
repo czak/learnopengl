@@ -58,6 +58,11 @@ int main() {
     1, 2, 3,
   };
 
+  unsigned int indices2[] = {
+    0, 1, 2,
+    1, 2, 3,
+  };
+
   // --- VAO ---
 
   unsigned int VAO;
@@ -70,11 +75,18 @@ int main() {
   glGenBuffers(1, &VBO);
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*) 0);
+  glEnableVertexAttribArray(0);
+  glBindVertexArray(0);
 
-  unsigned int EBO;
-  glGenBuffers(1, &EBO);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+  // --- indices ---
+
+  unsigned int EBO[2];
+  glGenBuffers(2, EBO);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[0]);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[1]);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices2), indices2, GL_STATIC_DRAW);
 
   // --- VERTEX ---
   int success;
@@ -85,9 +97,6 @@ int main() {
   if (!success) {
     fprintf(stderr, "Vertex shader failed");
   }
-
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*) 0);
-  glEnableVertexAttribArray(0);
 
   // --- FRAGMENT ---
 
@@ -106,14 +115,21 @@ int main() {
   glUseProgramStages(pipeline, GL_FRAGMENT_SHADER_BIT, fragmentShader);
   glBindProgramPipeline(pipeline);
 
-  while (!glfwWindowShouldClose(window)) {
+  unsigned int frame = 0;
+  int running = 1;
+  while (running) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-      glfwSetWindowShouldClose(window, GLFW_TRUE);
+      running = 0;
 
     glClearColor(0.2f, 0.5f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     glBindVertexArray(VAO);
+    if ((++frame >> 4) % 2 == 0) {
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[0]);
+    } else {
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[1]);
+    }
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 
