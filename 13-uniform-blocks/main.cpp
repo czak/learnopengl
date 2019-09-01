@@ -95,10 +95,11 @@ int main() {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
       glfwSetWindowShouldClose(window, GLFW_TRUE);
 
-    glClearColor(0.2f, 0.5f, 0.3f, 1.0f);
+    glClearColor(0.2f, 0.5f, 0.3f, 0.3f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     buf[1] = 1.0f;
+    buf[3] = 1.0f;
   
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 3);
