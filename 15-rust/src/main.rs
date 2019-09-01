@@ -110,7 +110,12 @@ fn load_shader(filename: &str, kind: gl::types::GLuint) -> gl::types::GLuint {
         gl::GetProgramiv(shader, gl::LINK_STATUS, &mut success);
         if success == 0 {
             let error = wsc(512);
-            gl::GetProgramInfoLog(shader, 512, std::ptr::null_mut(), error.as_ptr() as *mut gl::types::GLchar);
+            gl::GetProgramInfoLog(
+                shader,
+                512,
+                std::ptr::null_mut(),
+                error.as_ptr() as *mut gl::types::GLchar,
+            );
             dbg!(error);
         }
         dbg!(success);
