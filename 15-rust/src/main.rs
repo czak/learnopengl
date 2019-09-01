@@ -94,12 +94,6 @@ fn main() {
     }
 }
 
-fn wsc(len: usize) -> std::ffi::CString {
-    let mut buffer: Vec<u8> = Vec::with_capacity(len + 1);
-    buffer.extend([b' '].iter().cycle().take(len));
-    unsafe { std::ffi::CString::from_vec_unchecked(buffer) }
-}
-
 fn load_shader(filename: &str, kind: gl::types::GLuint) -> gl::types::GLuint {
     let source = std::fs::read_to_string(filename).unwrap();
     let c_source = std::ffi::CString::new(source).unwrap();
@@ -109,16 +103,12 @@ fn load_shader(filename: &str, kind: gl::types::GLuint) -> gl::types::GLuint {
         let mut success = 0;
         gl::GetProgramiv(shader, gl::LINK_STATUS, &mut success);
         if success == 0 {
-            let error = wsc(512);
-            gl::GetProgramInfoLog(
-                shader,
-                512,
-                std::ptr::null_mut(),
-                error.as_ptr() as *mut gl::types::GLchar,
-            );
-            dbg!(error);
+            let mut buffer: Vec<u8> = Vec::with_capacity(512);
+            let mut len = 0;
+            gl::GetProgramInfoLog(shader, 512, &mut len, buffer.as_ptr() as *mut i8);
+            buffer.set_len(len as usize);
+            dbg!(String::from_utf8(buffer).unwrap());
         }
-        dbg!(success);
 
         shader
     }
