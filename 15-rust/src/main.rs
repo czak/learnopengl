@@ -15,6 +15,10 @@ fn main() {
         .build()
         .unwrap();
 
+    let gl_attr = video_subsystem.gl_attr();
+    gl_attr.set_context_version(4, 5);
+    gl_attr.set_context_profile(sdl2::video::GLProfile::Core);
+
     let _gl_context = window.gl_create_context().unwrap();
     gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
 
@@ -90,6 +94,12 @@ fn main() {
     }
 }
 
+fn wsc(len: usize) -> std::ffi::CString {
+    let mut buffer: Vec<u8> = Vec::with_capacity(len + 1);
+    buffer.extend([b' '].iter().cycle().take(len));
+    unsafe { std::ffi::CString::from_vec_unchecked(buffer) }
+}
+
 fn load_shader(filename: &str, kind: gl::types::GLuint) -> gl::types::GLuint {
     let source = std::fs::read_to_string(filename).unwrap();
     let c_source = std::ffi::CString::new(source).unwrap();
@@ -98,6 +108,11 @@ fn load_shader(filename: &str, kind: gl::types::GLuint) -> gl::types::GLuint {
 
         let mut success = 0;
         gl::GetProgramiv(shader, gl::LINK_STATUS, &mut success);
+        if success == 0 {
+            let error = wsc(512);
+            gl::GetProgramInfoLog(shader, 512, std::ptr::null_mut(), error.as_ptr() as *mut gl::types::GLchar);
+            dbg!(error);
+        }
         dbg!(success);
 
         shader
