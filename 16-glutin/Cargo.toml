@@ -1,0 +1,11 @@
+[package]
+name = "rust-opengl-sample"
+version = "0.1.0"
+authors = ["Łukasz Adamczak <lukasz@czak.pl>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+glutin = "0.21.1"
+gl = "0.13.0"
