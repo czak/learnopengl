@@ -21,7 +21,7 @@ fn main() {
     let mut event_pump = sdl_context.event_pump().unwrap();
 
     // Init
-    let vao = unsafe {
+    let (vao, program) = unsafe {
         gl::ClearColor(0.3, 0.0, 0.5, 1.0);
 
         gl::Viewport(0, 0, 800, 600);
@@ -57,20 +57,14 @@ fn main() {
         let vertex_shader = load_shader("shaders/vert.glsl", gl::VERTEX_SHADER);
         let fragment_shader = load_shader("shaders/frag.glsl", gl::FRAGMENT_SHADER);
 
-        // let mut pipeline = 0;
-        // gl::GenProgramPipelines(1, &mut pipeline);
-        // gl::UseProgramStages(pipeline, gl::VERTEX_SHADER_BIT, vertex_shader);
-        // gl::UseProgramStages(pipeline, gl::FRAGMENT_SHADER_BIT, fragment_shader);
-        // gl::BindProgramPipeline(pipeline);
-
         let program = gl::CreateProgram();
         gl::AttachShader(program, vertex_shader);
         gl::AttachShader(program, fragment_shader);
         gl::LinkProgram(program);
 
-        check_error(program, gl::LINK_STATUS);
+        check_link_status(program);
 
-        vao
+        (vao, program)
     };
 
     'running: loop {
@@ -88,6 +82,7 @@ fn main() {
         unsafe {
             gl::Clear(gl::COLOR_BUFFER_BIT);
 
+            gl::UseProgram(program);
             gl::BindVertexArray(vao);
             gl::DrawArrays(gl::TRIANGLES, 0, 3);
             gl::BindVertexArray(0);
@@ -106,16 +101,16 @@ fn load_shader(filename: &str, kind: gl::types::GLuint) -> gl::types::GLuint {
         gl::ShaderSource(shader, 1, &c_source.as_ptr(), std::ptr::null());
         gl::CompileShader(shader);
 
-        check_error(shader, gl::COMPILE_STATUS);
+        check_compile_status(shader);
 
         shader
     }
 }
 
-fn check_error(id: gl::types::GLuint, param_name: gl::types::GLenum) {
+fn check_compile_status(id: gl::types::GLuint) {
     let mut success = 0;
     unsafe {
-        gl::GetProgramiv(id, param_name, &mut success);
+        gl::GetShaderiv(id, gl::COMPILE_STATUS, &mut success);
     }
     if success == 0 {
         let mut buffer: Vec<u8> = Vec::with_capacity(512);
@@ -128,14 +123,18 @@ fn check_error(id: gl::types::GLuint, param_name: gl::types::GLenum) {
     }
 }
 
-// fn check_link_errors(id: gl::types::GLuint) {
-//     let mut success = 0;
-//     gl::GetProgramiv(id, gl::LINK_STATUS, &mut success);
-//     if success == 0 {
-//         let mut buffer: Vec<u8> = Vec::with_capacity(512);
-//         let mut len = 0;
-//         gl::GetProgramInfoLog(id, 512, &mut len, buffer.as_ptr() as *mut i8);
-//         buffer.set_len(len as usize);
-//         dbg!(String::from_utf8(buffer).unwrap());
-//     }
-// }
+fn check_link_status(id: gl::types::GLuint) {
+    let mut success = 0;
+    unsafe {
+        gl::GetProgramiv(id, gl::LINK_STATUS, &mut success);
+    }
+    if success == 0 {
+        let mut buffer: Vec<u8> = Vec::with_capacity(512);
+        let mut len = 0;
+        unsafe {
+            gl::GetProgramInfoLog(id, 512, &mut len, buffer.as_ptr() as *mut i8);
+            buffer.set_len(len as usize);
+        }
+        dbg!(String::from_utf8(buffer).unwrap());
+    }
+}
