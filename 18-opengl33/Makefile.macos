@@ -1,4 +1,4 @@
-GLAD_PATH=glad_31_core_noloader
+GLAD_PATH=glad_33_core_noloader
 GLFW_PATH=glfw-3.3.2.bin.MACOS
 
 CXXFLAGS = -I$(GLAD_PATH)/include -I$(GLFW_PATH)/include
