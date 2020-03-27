@@ -1,3 +1,5 @@
+GLAD_PATH=glad_31_core_noloader
+
 CXXFLAGS = -I$(GLAD_PATH)/include
 LDLIBS = -lglfw
 
