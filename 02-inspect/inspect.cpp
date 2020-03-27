@@ -27,8 +27,8 @@ int main() {
   glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
   // glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+  // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
   auto window = glfwCreateWindow(640, 480, "Hello Triangle", NULL, NULL);
   if (!window) {
