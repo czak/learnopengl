@@ -1,0 +1,13 @@
+GLAD_PATH=glad_31_core_noloader
+GLFW_PATH=glfw-3.3.2.bin.MACOS
+
+CXXFLAGS = -I$(GLAD_PATH)/include -I$(GLFW_PATH)/include
+LDFLAGS = -L$(GLFW_PATH)/lib-macos
+LDLIBS = -framework OpenGL -lglfw -Wl,-rpath,"$(GLFW_PATH)/lib-macos"
+
+sample: main.cpp $(GLAD_PATH)/src/glad.c
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(LDLIBS) -o $@ $^
+
+.PHONY: clean
+clean:
+	rm -f sample
