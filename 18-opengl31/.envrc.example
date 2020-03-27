@@ -1,2 +1,2 @@
-export GLAD_PATH=glad_45_core_noloader
+export GLAD_PATH=glad_31_core_noloader
 export CPLUS_INCLUDE_PATH=$GLAD_PATH/include
