@@ -57,11 +57,18 @@ fn main() {
         let vertex_shader = load_shader("shaders/vert.glsl", gl::VERTEX_SHADER);
         let fragment_shader = load_shader("shaders/frag.glsl", gl::FRAGMENT_SHADER);
 
-        let mut pipeline = 0;
-        gl::GenProgramPipelines(1, &mut pipeline);
-        gl::UseProgramStages(pipeline, gl::VERTEX_SHADER_BIT, vertex_shader);
-        gl::UseProgramStages(pipeline, gl::FRAGMENT_SHADER_BIT, fragment_shader);
-        gl::BindProgramPipeline(pipeline);
+        // let mut pipeline = 0;
+        // gl::GenProgramPipelines(1, &mut pipeline);
+        // gl::UseProgramStages(pipeline, gl::VERTEX_SHADER_BIT, vertex_shader);
+        // gl::UseProgramStages(pipeline, gl::FRAGMENT_SHADER_BIT, fragment_shader);
+        // gl::BindProgramPipeline(pipeline);
+
+        let program = gl::CreateProgram();
+        gl::AttachShader(program, vertex_shader);
+        gl::AttachShader(program, fragment_shader);
+        gl::LinkProgram(program);
+
+        check_error(program, gl::LINK_STATUS);
 
         vao
     };
@@ -95,20 +102,40 @@ fn load_shader(filename: &str, kind: gl::types::GLuint) -> gl::types::GLuint {
     let c_source = std::ffi::CString::new(source).unwrap();
 
     unsafe {
-        let shader = gl::CreateShaderProgramv(kind, 1, &c_source.as_ptr());
-        check_link_errors(shader);
+        let shader = gl::CreateShader(kind);
+        gl::ShaderSource(shader, 1, &c_source.as_ptr(), std::ptr::null());
+        gl::CompileShader(shader);
+
+        check_error(shader, gl::COMPILE_STATUS);
+
         shader
     }
 }
 
-fn check_link_errors(id: gl::types::GLuint) {
+fn check_error(id: gl::types::GLuint, param_name: gl::types::GLenum) {
     let mut success = 0;
-    gl::GetProgramiv(id, gl::LINK_STATUS, &mut success);
+    unsafe {
+        gl::GetProgramiv(id, param_name, &mut success);
+    }
     if success == 0 {
         let mut buffer: Vec<u8> = Vec::with_capacity(512);
         let mut len = 0;
-        gl::GetProgramInfoLog(id, 512, &mut len, buffer.as_ptr() as *mut i8);
-        buffer.set_len(len as usize);
+        unsafe {
+            gl::GetProgramInfoLog(id, 512, &mut len, buffer.as_ptr() as *mut i8);
+            buffer.set_len(len as usize);
+        }
         dbg!(String::from_utf8(buffer).unwrap());
     }
 }
+
+// fn check_link_errors(id: gl::types::GLuint) {
+//     let mut success = 0;
+//     gl::GetProgramiv(id, gl::LINK_STATUS, &mut success);
+//     if success == 0 {
+//         let mut buffer: Vec<u8> = Vec::with_capacity(512);
+//         let mut len = 0;
+//         gl::GetProgramInfoLog(id, 512, &mut len, buffer.as_ptr() as *mut i8);
+//         buffer.set_len(len as usize);
+//         dbg!(String::from_utf8(buffer).unwrap());
+//     }
+// }
