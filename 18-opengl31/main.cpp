@@ -7,6 +7,26 @@
 
 using std::fprintf;
 
+static void checkCompileErrors(GLuint id) {
+  int success;
+  char infoLog[512];
+  glGetShaderiv(id, GL_COMPILE_STATUS, &success);
+  if (!success) {
+    glGetShaderInfoLog(id, 512, NULL, infoLog);
+    fprintf(stderr, "Compile error: %s\n", infoLog);
+  }
+}
+
+static void checkLinkErrors(GLuint id) {
+  int success;
+  char infoLog[512];
+  glGetProgramiv(id, GL_LINK_STATUS, &success);
+  if (!success) {
+    glGetProgramInfoLog(id, 512, NULL, infoLog);
+    fprintf(stderr, "Link error: %s\n", infoLog);
+  }
+}
+
 unsigned int loadShader(std::string filename, GLenum type) {
   std::ifstream f(filename);
   std::stringstream buffer;
@@ -15,13 +35,11 @@ unsigned int loadShader(std::string filename, GLenum type) {
   auto source = buffer.str();
   auto psource = source.c_str();
 
-  unsigned int shader = glCreateShaderProgramv(type, 1, &psource);
+  unsigned int shader = glCreateShader(type);
+  glShaderSource(shader, 1, &psource, NULL);
+  glCompileShader(shader);
 
-  int success;
-  glGetProgramiv(shader, GL_LINK_STATUS, &success);
-  if (!success) {
-    fprintf(stderr, "Vertex shader failed");
-  }
+  checkCompileErrors(shader);
 
   return shader;
 }
@@ -68,7 +86,7 @@ int main() {
   glGenVertexArrays(1, &VAO);
   glBindVertexArray(VAO);
 
-  // --- buffer setup ---
+  // --- BUFFER SETUP ---
 
   unsigned int VBO;
   glGenBuffers(1, &VBO);
@@ -88,13 +106,19 @@ int main() {
   unsigned int vertexShader = loadShader("vert.glsl", GL_VERTEX_SHADER);
   unsigned int fragmentShader = loadShader("frag.glsl", GL_FRAGMENT_SHADER);
 
-  // --- PIPELINE ---
+  // --- PROGRAM ---
 
-  unsigned int pipeline;
-  glGenProgramPipelines(1, &pipeline);
-  glUseProgramStages(pipeline, GL_VERTEX_SHADER_BIT, vertexShader);
-  glUseProgramStages(pipeline, GL_FRAGMENT_SHADER_BIT, fragmentShader);
-  glBindProgramPipeline(pipeline);
+  unsigned int program = glCreateProgram();
+  glAttachShader(program, vertexShader);
+  glAttachShader(program, fragmentShader);
+  glLinkProgram(program);
+  checkLinkErrors(program);
+
+  // shaders themselves can now be deleted
+  glDeleteShader(vertexShader);
+  glDeleteShader(fragmentShader);
+
+  // --- MAIN ---
 
   while (!glfwWindowShouldClose(window)) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -103,6 +127,7 @@ int main() {
     glClearColor(0.2f, 0.5f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
+    glUseProgram(program);
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
