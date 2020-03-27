@@ -2,7 +2,7 @@
 #include <fstream>
 #include <sstream>
 
-#include <epoxy/gl.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 using std::printf;
@@ -45,6 +45,9 @@ int main() {
     return 1;
   }
   glfwMakeContextCurrent(window);
+
+  // load function pointers via glfw
+  gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
 
   glViewport(0, 0, 800, 600);
 
