@@ -93,19 +93,22 @@ fn main() {
 fn load_shader(filename: &str, kind: gl::types::GLuint) -> gl::types::GLuint {
     let source = std::fs::read_to_string(filename).unwrap();
     let c_source = std::ffi::CString::new(source).unwrap();
+
     unsafe {
         let shader = gl::CreateShaderProgramv(kind, 1, &c_source.as_ptr());
-
-        let mut success = 0;
-        gl::GetProgramiv(shader, gl::LINK_STATUS, &mut success);
-        if success == 0 {
-            let mut buffer: Vec<u8> = Vec::with_capacity(512);
-            let mut len = 0;
-            gl::GetProgramInfoLog(shader, 512, &mut len, buffer.as_ptr() as *mut i8);
-            buffer.set_len(len as usize);
-            dbg!(String::from_utf8(buffer).unwrap());
-        }
-
+        check_link_errors(shader);
         shader
+    }
+}
+
+fn check_link_errors(id: gl::types::GLuint) {
+    let mut success = 0;
+    gl::GetProgramiv(id, gl::LINK_STATUS, &mut success);
+    if success == 0 {
+        let mut buffer: Vec<u8> = Vec::with_capacity(512);
+        let mut len = 0;
+        gl::GetProgramInfoLog(id, 512, &mut len, buffer.as_ptr() as *mut i8);
+        buffer.set_len(len as usize);
+        dbg!(String::from_utf8(buffer).unwrap());
     }
 }
