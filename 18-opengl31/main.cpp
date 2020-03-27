@@ -44,7 +44,13 @@ unsigned int loadShader(std::string filename, GLenum type) {
   return shader;
 }
 
+static void error_callback(int error, const char* description) {
+  fprintf(stderr, "Error %d: %s\n", error, description);
+}
+
 int main() {
+  glfwSetErrorCallback(error_callback);
+
   glfwInit();
 
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
