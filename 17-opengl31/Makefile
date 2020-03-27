@@ -1,8 +1,7 @@
-GLAD = glad_45_core_noloader
-CXXFLAGS = -I$(GLAD)/include
+CXXFLAGS = -I$(GLAD_PATH)/include
 LDLIBS = -lglfw
 
-sample: main.cpp $(GLAD)/src/glad.c
+sample: main.cpp $(GLAD_PATH)/src/glad.c
 	$(CXX) $(CXXFLAGS) $(LDLIBS) -o $@ $^
 
 .PHONY: clean
