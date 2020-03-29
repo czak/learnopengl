@@ -26,7 +26,7 @@ fn main() {
         gl::Viewport(0, 0, 800, 600);
     }
 
-    let vao = unsafe {
+    let vbo = unsafe {
         #[rustfmt::skip]
         let vertices: [f32; 9] = [
              0.0,  0.5,  0.0,
@@ -43,11 +43,16 @@ fn main() {
             vertices.as_ptr() as *const gl::types::GLvoid,
             gl::STATIC_DRAW,
         );
+        gl::BindBuffer(gl::ARRAY_BUFFER, 0);
 
+        vbo
+    };
+
+    let vao = unsafe {
         let mut vao = 0;
         gl::GenVertexArrays(1, &mut vao);
         gl::BindVertexArray(vao);
-
+        gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
         gl::VertexAttribPointer(
             0,
             3,
