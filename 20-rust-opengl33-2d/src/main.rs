@@ -21,18 +21,18 @@ fn main() {
     let mut event_pump = sdl_context.event_pump().unwrap();
 
     // Init
-    let (vao, program) = unsafe {
+    unsafe {
         gl::ClearColor(0.3, 0.0, 0.5, 1.0);
-
         gl::Viewport(0, 0, 800, 600);
+    }
 
-        let vertices: [f32; 12] = [
-            0.5, 0.5, 0.0, 0.5, -0.5, 0.0, -0.5, -0.5, 0.0, -0.5, 0.5, 0.0,
+    let vao = unsafe {
+        #[rustfmt::skip]
+        let vertices: [f32; 9] = [
+             0.0,  0.5,  0.0,
+             0.5, -0.5,  0.0,
+            -0.5, -0.5,  0.0
         ];
-
-        let mut vao = 0;
-        gl::GenVertexArrays(1, &mut vao);
-        gl::BindVertexArray(vao);
 
         let mut vbo = 0;
         gl::GenBuffers(1, &mut vbo);
@@ -44,6 +44,10 @@ fn main() {
             gl::STATIC_DRAW,
         );
 
+        let mut vao = 0;
+        gl::GenVertexArrays(1, &mut vao);
+        gl::BindVertexArray(vao);
+
         gl::VertexAttribPointer(
             0,
             3,
@@ -54,6 +58,11 @@ fn main() {
         );
         gl::EnableVertexAttribArray(0);
 
+        vao
+    };
+
+    // Shader program
+    let program = unsafe {
         let vertex_shader = load_shader("shaders/vert.glsl", gl::VERTEX_SHADER);
         let fragment_shader = load_shader("shaders/frag.glsl", gl::FRAGMENT_SHADER);
 
@@ -64,7 +73,7 @@ fn main() {
 
         check_link_status(program);
 
-        (vao, program)
+        program
     };
 
     'running: loop {
