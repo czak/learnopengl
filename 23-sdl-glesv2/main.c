@@ -52,10 +52,6 @@ int main() {
     exit(1);
   }
 
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
   SDL_Window* window = SDL_CreateWindow(
       "sample",
       10,
@@ -68,8 +64,10 @@ int main() {
     return 1;
   }
 
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   SDL_GLContext context = SDL_GL_CreateContext(window);
-  context = SDL_GL_CreateContext(window);
   if (!context) {
     fprintf(stderr, "Couldn't create context: %s\n", SDL_GetError());
     return 1;
