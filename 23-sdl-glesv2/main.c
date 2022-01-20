@@ -54,7 +54,7 @@ int main() {
 
   SDL_Window* window = SDL_CreateWindow(
       "sample",
-      10,
+      SDL_WINDOWPOS_UNDEFINED,
       SDL_WINDOWPOS_UNDEFINED,
       800,
       600,
@@ -121,6 +121,7 @@ int main() {
   int running = 1;
   int frames = 0;
   unsigned int start = SDL_GetTicks();
+
   while (running) {
     SDL_Event event;
     if (SDL_PollEvent(&event)) {
