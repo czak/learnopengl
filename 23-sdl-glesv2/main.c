@@ -10,6 +10,7 @@ char *vertex_shader_source =
 "}\n";
 
 char *fragment_shader_source =
+"precision mediump float;\n"
 "void main()\n"
 "{\n"
 "  gl_FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
@@ -51,6 +52,10 @@ int main() {
     exit(1);
   }
 
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
   SDL_Window* window = SDL_CreateWindow(
       "sample",
       10,
@@ -70,9 +75,16 @@ int main() {
     return 1;
   }
 
-  int attr;
-  SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &attr);
-  fprintf(stderr, "attr: %d\n", attr);
+  // some debugging info
+
+  fprintf(stderr, "Vendor graphic card: %s\n", glGetString(GL_VENDOR));
+  fprintf(stderr, "Renderer: %s\n", glGetString(GL_RENDERER));
+  fprintf(stderr, "Version GL: %s\n", glGetString(GL_VERSION));
+  fprintf(stderr, "Version GLSL: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
+
+  // --- SETUP ---
+
+  glViewport(0, 0, 800, 600);
 
   // --- SHADERS ---
 
@@ -87,7 +99,7 @@ int main() {
   glLinkProgram(program);
   checkLinkErrors(program);
 
-  glViewport(0, 0, 800, 600);
+  // --- GEOMETRY ---
 
   // Set up vertices
   float vertices[] = {
@@ -106,8 +118,11 @@ int main() {
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, vertices);
   glEnableVertexAttribArray(0);
 
+  // --- MAIN LOOP ---
+
   int running = 1;
   int frames = 0;
+  unsigned int start = SDL_GetTicks();
   while (running) {
     SDL_Event event;
     if (SDL_PollEvent(&event)) {
@@ -129,7 +144,8 @@ int main() {
     ++frames;
   }
 
-  fprintf(stderr, "frames: %d\n", frames);
+  float duration = (SDL_GetTicks() - start) / 1000.0f; 
+  fprintf(stderr, "%d frames in %f s = %f FPS\n", frames, duration, frames / duration);
 
   SDL_DestroyWindow(window);
   SDL_Quit();
