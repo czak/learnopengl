@@ -5,10 +5,14 @@
 #include "shaders/vertex_shader.h"
 #include "shaders/fragment_shader.h"
 
+extern unsigned char font[512*512*3];
+
 static GLuint program;
+static GLuint texture;
 
 static struct vertex {
 	GLshort x, y;
+	GLushort s, t;
 } vertices[4];
 
 static void key_callback(GLFWwindow *window, int key, int scancode, int action,
@@ -55,8 +59,20 @@ int main()
 	glGetProgramiv(program, GL_LINK_STATUS, &success);
 	assert(success);
 
-
 	glUseProgram(program);
+
+
+	// Load texture
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 512, 512, 0, GL_RGB, GL_UNSIGNED_BYTE, font);
 
 
 	// Setup viewport
@@ -65,15 +81,17 @@ int main()
 
 
 	// Build geometry
-	vertices[0] = (struct vertex){ 0, 0 };
-	vertices[1] = (struct vertex){ 0, 100 };
-	vertices[2] = (struct vertex){ 100, 0 };
-	vertices[3] = (struct vertex){ 100, 100 };
+	vertices[0] = (struct vertex){ 0, 0, 0, 0 };
+	vertices[1] = (struct vertex){ 0, 100, 0, 100 };
+	vertices[2] = (struct vertex){ 100, 0, 100, 0 };
+	vertices[3] = (struct vertex){ 100, 100, 100, 100 };
 
 
 	// Prepare to draw quads with texture coords
 	glVertexAttribPointer(0, 2, GL_SHORT, GL_FALSE, sizeof(struct vertex), (void *) vertices);
+	glVertexAttribPointer(1, 2, GL_UNSIGNED_SHORT, GL_FALSE, sizeof(struct vertex), (void *) vertices + 2 * sizeof(GLushort));
 	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
 
 
 	// Alpha blending

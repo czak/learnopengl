@@ -1,7 +1,9 @@
 LDLIBS = -lglfw -lGLESv2
+OBJS = main.o font/roboto.o
+SHADERS = shaders/vertex_shader.h shaders/fragment_shader.h
 
-main: main.c shaders/vertex_shader.h shaders/fragment_shader.h
-	$(CC) $< $(LDLIBS) -o $@
+main: $(OBJS) $(SHADERS)
+	$(CC) $(OBJS) $(LDLIBS) -o $@
 
 shaders/vertex_shader.h: shaders/vertex.glsl
 	shaders/parse_shader.sh $< > $@
