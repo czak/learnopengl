@@ -1,5 +1,3 @@
-#extension GL_OES_standard_derivatives: enable
-
 precision mediump float;
 
 uniform sampler2D u_Sampler;
@@ -13,15 +11,13 @@ float median(float r, float g, float b) {
 
 void main()
 {
-  vec3 s = texture2D(u_Sampler, v_TexCoord).rgb;
+  vec3 sample = texture2D(u_Sampler, v_TexCoord).rgb;
+  float sigDist = median(sample.r, sample.g, sample.b) - 0.5;
 
-  // Signed distance
-  float sigDist = median(s.r, s.g, s.b) - 0.5;
-  float alpha = clamp(sigDist / fwidth(sigDist) + 0.5, 0.0, 1.0);
+  // TODO: move to distanceFactor uniform
+  // see https://github.com/Chlumsky/msdfgen/issues/36#issuecomment-429240110
+  sigDist *= 2.0;
 
-  // Alpha Test
-  if (alpha < 0.01) discard;
-
-  // Output
+  float alpha = clamp(sigDist + 0.5, 0.0, 1.0);
   gl_FragColor = vec4(1.0, 1.0, 1.0, alpha);
 }
