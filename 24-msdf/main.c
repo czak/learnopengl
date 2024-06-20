@@ -82,9 +82,9 @@ int main()
 
 	// Build geometry
 	vertices[0] = (struct vertex){ 0, 0, 0, 0 };
-	vertices[1] = (struct vertex){ 0, 100, 0, 100 };
-	vertices[2] = (struct vertex){ 100, 0, 100, 0 };
-	vertices[3] = (struct vertex){ 100, 100, 100, 100 };
+	vertices[1] = (struct vertex){ 0, 256, 0, 512 };
+	vertices[2] = (struct vertex){ 256, 0, 512, 0 };
+	vertices[3] = (struct vertex){ 256, 256, 512, 512 };
 
 
 	// Prepare to draw quads with texture coords
@@ -99,11 +99,11 @@ int main()
 	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
 	while (!glfwWindowShouldClose(window)) {
-		glClearColor(1.0, 0.6, 0.0f, 1.0);
+		glClearColor(0.0, 0.0, 0.0f, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glUniform3f(glGetUniformLocation(program, "u_Color"), 0.2f, 0.0f, 1.0f);
-		glUniform2f(glGetUniformLocation(program, "u_Offset"), 10, 10);
+		glUniform2f(glGetUniformLocation(program, "u_Offset"), 0, 0);
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 		glfwSwapBuffers(window);
