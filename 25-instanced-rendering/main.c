@@ -74,7 +74,7 @@ int main()
 	// unsigned char text[] = { 40, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 40 };
 	unsigned char text[] = "hello, world!";
 
-	glVertexAttribPointer(1, 1, GL_UNSIGNED_BYTE, GL_FALSE, 0, (void *) text);
+	glVertexAttribIPointer(1, 1, GL_UNSIGNED_BYTE, 0, (void *) text);
 	glVertexAttribDivisor(1, 1);
 	glEnableVertexAttribArray(1);
 
