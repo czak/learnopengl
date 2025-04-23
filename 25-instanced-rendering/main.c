@@ -59,8 +59,9 @@ int main()
 		1.0f, 0.0f, 0.0f,
 		0.0f, 1.0f, 0.0f,
 		0.0f, 0.0f, 1.0f,
-		// 0.0f, 1.0f, 0.0f,
-		// 0.0f, 0.0f, 1.0f,
+		0.0f, 1.0f, 1.0f,
+		1.0f, 0.0f, 1.0f,
+		1.0f, 1.0f, 0.0f,
 	};
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void *) colors);
 	glVertexAttribDivisor(1, 1);
@@ -73,8 +74,7 @@ int main()
 
 		glUniform3f(glGetUniformLocation(program, "u_Color"), 0.2f, 0.0f, 1.0f);
 		glUniform2f(glGetUniformLocation(program, "u_Offset"), 0, 0);
-		// glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-		glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, 2);
+		glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, 6);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
