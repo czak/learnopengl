@@ -1,4 +1,3 @@
-#include <GL/gl.h>
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,8 +44,8 @@ int main()
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -58,33 +57,26 @@ int main()
 	glViewport(0, 0, 640, 480);
 	glUniform2f(glGetUniformLocation(program, "u_Viewport"), 2.0f / 640, 2.0f / 480);
 
-	// x, y, s, t
-	GLshort vertices[] = {
-		0, 0, 0, 0,
-		0, 50, 0, 96,
-		50, 0, 96, 0,
-		50, 50, 96, 96,
+	// Attributes
+	struct vertex {
+		GLfloat x, y;
+	} vertices[] = {
+		{ 0, 0 },
+		{ 0, 1 },
+		{ 1, 0 },
+		{ 1, 1 },
 	};
 
-
-	// Coords
-	glVertexAttribPointer(0, 2, GL_SHORT, GL_FALSE, 4 * sizeof(GLshort), (void *) vertices);
-	glVertexAttribPointer(1, 2, GL_SHORT, GL_FALSE, 4 * sizeof(GLshort), (void *) vertices + 2 * sizeof(GLshort));
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void *) vertices);
 	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
 
-	// Colors
-	float colors[] = {
-		1.0f, 0.0f, 0.0f,
-		0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 1.0f,
-		0.0f, 1.0f, 1.0f,
-		1.0f, 0.0f, 1.0f,
-		1.0f, 1.0f, 0.0f,
-	};
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void *) colors);
-	glVertexAttribDivisor(2, 1);
-	glEnableVertexAttribArray(2);
+	// Instances
+	// unsigned char text[] = { 40, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 40 };
+	unsigned char text[] = "hello, world!";
+
+	glVertexAttribPointer(1, 1, GL_UNSIGNED_BYTE, GL_FALSE, 0, (void *) text);
+	glVertexAttribDivisor(1, 1);
+	glEnableVertexAttribArray(1);
 
 	glEnable(GL_BLEND);
 	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
@@ -93,9 +85,9 @@ int main()
 		glClearColor(0.0, 0.0, 0.0f, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glUniform3f(glGetUniformLocation(program, "u_Color"), 0.2f, 0.0f, 1.0f);
+		glUniform3f(glGetUniformLocation(program, "u_Color"), 0.8f, 0.7f, 1.0f);
 		glUniform2f(glGetUniformLocation(program, "u_Offset"), 0, 0);
-		glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, 6);
+		glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, 13);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
