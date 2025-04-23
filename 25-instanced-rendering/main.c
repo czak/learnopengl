@@ -1,15 +1,13 @@
 #include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <GLFW/glfw3.h>
-#include <GLES2/gl2.h>
+#include <GLES3/gl3.h>
 
 #include "shaders/vertex_shader.h"
 #include "shaders/fragment_shader.h"
 
-static GLuint program;
-
-static struct vertex {
-	GLshort x, y;
-} vertices[4];
+GLuint build_shader_program(const char *vertex_shader_source, const char *fragment_shader_source);
 
 static void key_callback(GLFWwindow *window, int key, int scancode, int action,
 		int mods)
@@ -24,37 +22,18 @@ int main()
 
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
 	GLFWwindow *window = glfwCreateWindow(640, 480, "Hello", NULL, NULL);
-	if (!window) {
-		glfwTerminate();
-		return -1;
-	}
+	assert(window);
 
 	glfwMakeContextCurrent(window);
 	glfwSetKeyCallback(window, key_callback);
 
-
 	// Build shader program
-	GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertex_shader, 1, &vertex_shader_source, NULL);
-	glCompileShader(vertex_shader);
-
-	GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragment_shader, 1, &fragment_shader_source, NULL);
-	glCompileShader(fragment_shader);
-
-	program = glCreateProgram();
-	glAttachShader(program, vertex_shader);
-	glAttachShader(program, fragment_shader);
-	glLinkProgram(program);
-
-	int success;
-	glGetProgramiv(program, GL_LINK_STATUS, &success);
-	assert(success);
-
+	GLuint program = build_shader_program(vertex_shader_source, fragment_shader_source);
+	assert(program != 0);
 	glUseProgram(program);
 
 
@@ -62,17 +41,30 @@ int main()
 	glViewport(0, 0, 640, 480);
 	glUniform2f(glGetUniformLocation(program, "u_Viewport"), 2.0f / 640, 2.0f / 480);
 
-
 	// Build geometry
-	vertices[0] = (struct vertex){ 0, 0 };
-	vertices[1] = (struct vertex){ 0, 256 };
-	vertices[2] = (struct vertex){ 256, 0 };
-	vertices[3] = (struct vertex){ 256, 256 };
+	GLshort vertices[] = {
+		0, 0,
+		0, 50,
+		50, 0,
+		50, 50,
+	};
 
 
-	// Prepare to draw quads
-	glVertexAttribPointer(0, 2, GL_SHORT, GL_FALSE, sizeof(struct vertex), (void *) vertices);
+	// Coords
+	glVertexAttribPointer(0, 2, GL_SHORT, GL_FALSE, 0, (void *) vertices);
 	glEnableVertexAttribArray(0);
+
+	// Colors
+	float colors[] = {
+		1.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 1.0f,
+		// 0.0f, 1.0f, 0.0f,
+		// 0.0f, 0.0f, 1.0f,
+	};
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void *) colors);
+	glVertexAttribDivisor(1, 1);
+	glEnableVertexAttribArray(1);
 
 
 	while (!glfwWindowShouldClose(window)) {
@@ -81,11 +73,62 @@ int main()
 
 		glUniform3f(glGetUniformLocation(program, "u_Color"), 0.2f, 0.0f, 1.0f);
 		glUniform2f(glGetUniformLocation(program, "u_Offset"), 0, 0);
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		// glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, 2);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 
 	glfwTerminate();
+}
+
+GLuint build_shader_program(const char *vertex_shader_source, const char *fragment_shader_source)
+{
+	GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertex_shader, 1, &vertex_shader_source, NULL);
+	glCompileShader(vertex_shader);
+	GLint compiled;
+	glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &compiled);
+	if (compiled != GL_TRUE) {
+		GLchar log[1024];
+		glGetShaderInfoLog(vertex_shader, 1024, NULL, log);
+		fprintf(stderr, "Vertex shader compilation error:\n%s\n", log);
+		glDeleteShader(vertex_shader);
+		return 0;
+	}
+
+	GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragment_shader, 1, &fragment_shader_source, NULL);
+	glCompileShader(fragment_shader);
+	glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &compiled);
+	if (compiled != GL_TRUE) {
+		GLchar log[1024];
+		glGetShaderInfoLog(fragment_shader, 1024, NULL, log);
+		fprintf(stderr, "Fragment shader compilation error:\n%s\n", log);
+		glDeleteShader(vertex_shader);
+		glDeleteShader(fragment_shader);
+		return 0;
+	}
+
+	GLuint program = glCreateProgram();
+	glAttachShader(program, vertex_shader);
+	glAttachShader(program, fragment_shader);
+	glLinkProgram(program);
+
+	GLint linked;
+	glGetProgramiv(program, GL_LINK_STATUS, &linked);
+	if (linked != GL_TRUE) {
+		GLchar log[1024];
+		glGetProgramInfoLog(program, 1024, NULL, log);
+		fprintf(stderr, "Shader program linking error:\n%s\n", log);
+		glDeleteShader(vertex_shader);
+		glDeleteShader(fragment_shader);
+		glDeleteProgram(program);
+		return 0;
+	}
+
+	glDeleteShader(vertex_shader);
+	glDeleteShader(fragment_shader);
+	return program;
 }
