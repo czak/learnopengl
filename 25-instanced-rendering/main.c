@@ -1,0 +1,91 @@
+#include <assert.h>
+#include <GLFW/glfw3.h>
+#include <GLES2/gl2.h>
+
+#include "shaders/vertex_shader.h"
+#include "shaders/fragment_shader.h"
+
+static GLuint program;
+
+static struct vertex {
+	GLshort x, y;
+} vertices[4];
+
+static void key_callback(GLFWwindow *window, int key, int scancode, int action,
+		int mods)
+{
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, GLFW_TRUE);
+}
+
+int main()
+{
+	if (!glfwInit()) return -1;
+
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+	glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+
+	GLFWwindow *window = glfwCreateWindow(640, 480, "Hello", NULL, NULL);
+	if (!window) {
+		glfwTerminate();
+		return -1;
+	}
+
+	glfwMakeContextCurrent(window);
+	glfwSetKeyCallback(window, key_callback);
+
+
+	// Build shader program
+	GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertex_shader, 1, &vertex_shader_source, NULL);
+	glCompileShader(vertex_shader);
+
+	GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragment_shader, 1, &fragment_shader_source, NULL);
+	glCompileShader(fragment_shader);
+
+	program = glCreateProgram();
+	glAttachShader(program, vertex_shader);
+	glAttachShader(program, fragment_shader);
+	glLinkProgram(program);
+
+	int success;
+	glGetProgramiv(program, GL_LINK_STATUS, &success);
+	assert(success);
+
+	glUseProgram(program);
+
+
+	// Setup viewport
+	glViewport(0, 0, 640, 480);
+	glUniform2f(glGetUniformLocation(program, "u_Viewport"), 2.0f / 640, 2.0f / 480);
+
+
+	// Build geometry
+	vertices[0] = (struct vertex){ 0, 0 };
+	vertices[1] = (struct vertex){ 0, 256 };
+	vertices[2] = (struct vertex){ 256, 0 };
+	vertices[3] = (struct vertex){ 256, 256 };
+
+
+	// Prepare to draw quads
+	glVertexAttribPointer(0, 2, GL_SHORT, GL_FALSE, sizeof(struct vertex), (void *) vertices);
+	glEnableVertexAttribArray(0);
+
+
+	while (!glfwWindowShouldClose(window)) {
+		glClearColor(0.0, 0.0, 0.0f, 1.0);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		glUniform3f(glGetUniformLocation(program, "u_Color"), 0.2f, 0.0f, 1.0f);
+		glUniform2f(glGetUniformLocation(program, "u_Offset"), 0, 0);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
+
+	glfwTerminate();
+}
