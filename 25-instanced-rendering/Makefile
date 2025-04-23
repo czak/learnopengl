@@ -1,5 +1,5 @@
 LDLIBS = -lglfw -lGLESv2
-OBJS = main.o
+OBJS = main.o font/monogram.o
 SHADERS = shaders/vertex_shader.h shaders/fragment_shader.h
 
 main: $(OBJS)
